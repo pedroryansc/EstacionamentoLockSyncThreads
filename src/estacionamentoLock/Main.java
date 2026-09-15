@@ -1,8 +1,7 @@
-package estacionamento;
+package estacionamentoLock;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Random;
 
 public class Main {
 	public static void main(String[] args) {
@@ -12,15 +11,21 @@ public class Main {
 		
 		List<Thread> veiculos = new ArrayList<>(QUANT_VEICULOS);
 		
-		Random sorteador = new Random();
-		int tempoEstacionado;
-		
 		for(Integer i = 1; i <= QUANT_VEICULOS; i++) {
-			tempoEstacionado = sorteador.nextInt(10, 21);
-			
-			Thread veiculo = new Thread(new Veiculo(estacionamento, tempoEstacionado), i.toString());
+			Thread veiculo = new Thread(new Veiculo(estacionamento), i.toString());
 			
 			veiculos.add(veiculo);
+		}
+		
+		for(Thread veiculo : veiculos)
+			veiculo.start();
+		
+		for(Thread veiculo : veiculos) {
+			try {
+				veiculo.join();
+			} catch(InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }
