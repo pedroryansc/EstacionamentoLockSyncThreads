@@ -11,6 +11,10 @@ public class EstacionamentoLock {
 	private final int TARIFA = 5;
 	private final int TEMPO_CANCELA = 3;
 	
+	public int getTotalArrecadado() {
+		return totalArrecadado;
+	}
+	
 	public void usarEstacionamento() {
 		String numVeiculo = Thread.currentThread().getName();
 		
@@ -32,31 +36,7 @@ public class EstacionamentoLock {
 		lock.lock();
 		
 		System.out.println("Veículo " + numVeiculo + " pegou o ticket do estacionamento.");
-		System.out.println("Abrindo a cancela para o veículo " + numVeiculo + ".");
-		
-		try {
-			Thread.sleep(TEMPO_CANCELA * 1000);
-		} catch(InterruptedException e) {
-			e.printStackTrace();
-		}
-		
-		System.out.println("Veículo " + numVeiculo + " entrando no estacionamento.");
-		
-		try {
-			Thread.sleep(4000);
-		} catch(InterruptedException e) {
-			e.printStackTrace();
-		}
-		
-		System.out.println("Fechando a cancela após o veículo " + numVeiculo + " passar.");
-		
-		try {
-			Thread.sleep(TEMPO_CANCELA * 1000);
-		} catch(InterruptedException e) {
-			e.printStackTrace();
-		}
-		
-		System.out.println("Cancela fechada.");
+		abrirCancela(numVeiculo, true);
 		
 		// Libera o uso da cancela após o veículo passar
 		lock.unlock();
@@ -75,7 +55,45 @@ public class EstacionamentoLock {
 		// Adquire a permissão para passar pela cancela (se estiver ocupada, aguarda)
 		lock.lock();
 		
+		System.out.println("Veículo " + numVeiculo + " chegou na saída e pagou pelo ticket.");
+		
+		// Pagamento pelo estacionamento é adicionado ao total arrecadado
+		totalArrecadado += TARIFA;
+		
+		abrirCancela(numVeiculo, false);
+		
 		// Libera o uso da cancela após o veículo sair
 		lock.unlock();
+	}
+	
+	public void abrirCancela(String numVeiculo, boolean entrando) {
+		System.out.println("Abrindo a cancela para o veículo " + numVeiculo + ".");
+		
+		try {
+			Thread.sleep(TEMPO_CANCELA * 1000);
+		} catch(InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		if(entrando)
+			System.out.println("Veículo " + numVeiculo + " entrando no estacionamento.");
+		else
+			System.out.println("Veículo " + numVeiculo + " saindo do estacionamento.");
+		
+		try {
+			Thread.sleep(4000);
+		} catch(InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		System.out.println("Fechando a cancela após o veículo " + numVeiculo + " passar.");
+		
+		try {
+			Thread.sleep(TEMPO_CANCELA * 1000);
+		} catch(InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		System.out.println("Cancela fechada.");
 	}
 }
