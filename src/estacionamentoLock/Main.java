@@ -27,5 +27,15 @@ public class Main {
 				e.printStackTrace();
 			}
 		}
+		
+		System.out.println("\n\n===== FIM DO EXPEDIENTE =====\n");
+		System.out.println("Ordem de saída dos veículos:");
+		
+		List<String> saidaVeiculos = estacionamento.getSaidaVeiculos();
+		
+		for(int i = 0; i < saidaVeiculos.size(); i++)
+			System.out.println((i + 1) + ". Veículo " + saidaVeiculos.get(i));
+		
+		System.out.println("\nTotal arrecadado: R$ " + estacionamento.getTotalArrecadado());
 	}
 }

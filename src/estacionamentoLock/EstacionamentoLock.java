@@ -3,13 +3,20 @@ package estacionamentoLock;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.Random;
+import java.util.List;
+import java.util.ArrayList;
 
 public class EstacionamentoLock {
 	private Lock lock = new ReentrantLock();
 	private Random sorteador = new Random();
+	private List<String> saidaVeiculos = new ArrayList<>();
 	private int totalArrecadado = 0;
 	private final int TARIFA = 5;
 	private final int TEMPO_CANCELA = 3;
+	
+	public List<String> getSaidaVeiculos(){
+		return saidaVeiculos;
+	}
 	
 	public int getTotalArrecadado() {
 		return totalArrecadado;
@@ -21,7 +28,7 @@ public class EstacionamentoLock {
 		// Viagem do veículo até o estacionamento (Tempo aleatório)
 		System.out.println("Veículo " + numVeiculo + " está indo para o estacionamento.");
 		
-		int tempoViagem = sorteador.nextInt(5, 11);
+		int tempoViagem = sorteador.nextInt(5, 51);
 		
 		try {
 			Thread.sleep(tempoViagem * 1000);
@@ -29,17 +36,24 @@ public class EstacionamentoLock {
 			e.printStackTrace();
 		}
 		
-		System.out.println("Veículo " + numVeiculo + " chegou.");
+		System.out.println("\nVeículo " + numVeiculo + " chegou.");
 		
-		// Adquire a permissão do Lock para passar pela cancela (se estiver ocupada, o veículo aguarda)
-		// tryLock()?
-		lock.lock();
+		// Tenta adquirir a permissão do Lock para passar pela cancela (se estiver ocupada, o veículo aguarda)
+		boolean adquiriuLock = lock.tryLock();
 		
-		System.out.println("Veículo " + numVeiculo + " pegou o ticket do estacionamento.");
-		abrirCancela(numVeiculo, true);
-		
-		// Libera o uso da cancela após o veículo passar
-		lock.unlock();
+		try {
+			if(!adquiriuLock) {
+				System.out.println("\nVeículo " + numVeiculo + " está aguardando na fila.");
+				lock.lock();
+			}
+			
+			System.out.println("\nVeículo " + numVeiculo + " pegou o ticket do estacionamento.");
+			
+			abrirCancela(numVeiculo, true);
+		} finally {
+			// Libera o uso da cancela (após o veículo passar, se não houver erros)
+			lock.unlock();
+		}
 		
 		// O veículo permanece um tempo (aleatório) no estacionamento
 		int tempoEstacionado = sorteador.nextInt(10, 21);
@@ -49,25 +63,26 @@ public class EstacionamentoLock {
 			e.printStackTrace();
 		}
 		
-		System.out.println("\nVeículo " + numVeiculo + " permaneceu " + tempoEstacionado + " segundos no estacionamento.\n");
-		System.out.println("Veículo " + numVeiculo + " foi para a saída.");
+		System.out.println("\nVeículo " + numVeiculo + " permaneceu " + tempoEstacionado + " segundos no estacionamento e foi para a saída.");
 		
 		// Adquire a permissão para passar pela cancela (se estiver ocupada, aguarda)
 		lock.lock();
 		
-		System.out.println("Veículo " + numVeiculo + " chegou na saída e pagou pelo ticket.");
-		
-		// Pagamento pelo estacionamento é adicionado ao total arrecadado
-		totalArrecadado += TARIFA;
-		
-		abrirCancela(numVeiculo, false);
-		
-		// Libera o uso da cancela após o veículo sair
-		lock.unlock();
+		try {
+			System.out.println("\nVeículo " + numVeiculo + " chegou na saída e pagou pelo ticket.");
+			
+			// Pagamento pelo estacionamento é adicionado ao total arrecadado
+			totalArrecadado += TARIFA;
+			
+			abrirCancela(numVeiculo, false);
+		} finally {
+			// Libera o uso da cancela (após o veículo sair, se não houver erros)
+			lock.unlock();
+		}
 	}
 	
 	public void abrirCancela(String numVeiculo, boolean entrando) {
-		System.out.println("Abrindo a cancela para o veículo " + numVeiculo + ".");
+		System.out.println("\nAbrindo a cancela para o veículo " + numVeiculo + ".");
 		
 		try {
 			Thread.sleep(TEMPO_CANCELA * 1000);
@@ -76,9 +91,12 @@ public class EstacionamentoLock {
 		}
 		
 		if(entrando)
-			System.out.println("Veículo " + numVeiculo + " entrando no estacionamento.");
-		else
-			System.out.println("Veículo " + numVeiculo + " saindo do estacionamento.");
+			System.out.println("\nVeículo " + numVeiculo + " entrando no estacionamento.");
+		else {
+			System.out.println("\nVeículo " + numVeiculo + " saindo do estacionamento.");
+			
+			saidaVeiculos.add(numVeiculo);
+		}
 		
 		try {
 			Thread.sleep(4000);
@@ -86,7 +104,7 @@ public class EstacionamentoLock {
 			e.printStackTrace();
 		}
 		
-		System.out.println("Fechando a cancela após o veículo " + numVeiculo + " passar.");
+		System.out.println("\nFechando a cancela após o veículo " + numVeiculo + " passar.");
 		
 		try {
 			Thread.sleep(TEMPO_CANCELA * 1000);
@@ -94,6 +112,6 @@ public class EstacionamentoLock {
 			e.printStackTrace();
 		}
 		
-		System.out.println("Cancela fechada.");
+		System.out.println("\nCancela fechada.");
 	}
 }
