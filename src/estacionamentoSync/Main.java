@@ -1,4 +1,4 @@
-package estacionamentoLock;
+package estacionamentoSync;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -7,7 +7,7 @@ public class Main {
 	public static void main(String[] args) {
 		final int QUANT_VEICULOS = 10;
 		
-		EstacionamentoLock estacionamento = new EstacionamentoLock();
+		EstacionamentoSync estacionamento = new EstacionamentoSync();
 		
 		List<Thread> veiculos = new ArrayList<>(QUANT_VEICULOS);
 		
@@ -17,8 +17,8 @@ public class Main {
 			veiculos.add(veiculo);
 		}
 		
-		System.out.println("Estacionamento Aberto - Lock\n");
-
+		System.out.println("Estacionamento Aberto - Synchronized\n");
+		
 		// A ordem de atendimento dos veículos pode mudar dependendo da execução,
 		// Cada veículo tem um tempo definido aleatoriamente para chegar no estacionamento,
 		// o que faz com que eles cheguem em momentos diferentes. Além disto, cada
